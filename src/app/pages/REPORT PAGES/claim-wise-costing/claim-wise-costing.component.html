@@ -1,0 +1,530 @@
+<div id="reportPage" class="view-wrapper list-page drilldown mt-0">
+  <div
+    [ngClass]="{ 'hide-content': !isContentVisible }"
+    id="reportPageParams"
+    class="paramsDiv SearchParams-container mt-2 mb-1"
+  >
+    <div class="container-fluid toolbar-fields mt-0">
+      <div class="row align-items-center g-2">
+        <!-- Facility Dropdown -->
+        <div class="col-auto">
+          <dx-drop-down-box
+            label="Facility"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="Facility_Value"
+            valueExpr="FacilityLicense"
+            [displayExpr]="displayFacility"
+            [showClearButton]="true"
+            [dataSource]="Facility_DataSource"
+            [width]="'250'"
+            [dropDownOptions]="{ width: 'auto' }"
+          >
+            <div *dxTemplate="let data of 'content'">
+              <dx-data-grid
+                #facilityGrid
+                [dataSource]="Facility_DataSource"
+                keyExpr="FacilityLicense"
+                [columns]="[
+                  {
+                    dataField: 'FacilityLicense',
+                    caption: 'Facility ID',
+                    width: 'auto'
+                  },
+                  {
+                    dataField: 'FacilityName',
+                    caption: 'Facility Name',
+                    width: 'auto'
+                  }
+                ]"
+                [selection]="{ mode: 'multiple' }"
+                [hoverStateEnabled]="true"
+                [paging]="{ enabled: true, pageSize: 10 }"
+                [filterRow]="{ visible: true }"
+                [headerFilter]="{ visible: true }"
+                [scrolling]="{ mode: 'virtual' }"
+                [height]="'auto'"
+                [(selectedRowKeys)]="Facility_Value"
+              ></dx-data-grid>
+            </div>
+          </dx-drop-down-box>
+        </div>
+
+        <!-- Search On -->
+        <div class="col-auto">
+          <dx-select-box
+            label="Search On"
+            labelMode="floating"
+            labelLocation="left"
+            [items]="searchOnDataSource"
+            valueExpr="id"
+            displayExpr="name"
+            [(value)]="selectedSearchOn"
+            [width]="180"
+          >
+          </dx-select-box>
+        </div>
+
+        <!-- Year -->
+        <div class="col-auto">
+          <dx-select-box
+            label="Year"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="selectedYear"
+            [dataSource]="years"
+            (onValueChanged)="onYearChanged($event)"
+            placeholder="Year"
+            [width]="100"
+          >
+          </dx-select-box>
+        </div>
+
+        <!-- Month -->
+        <div class="col-auto">
+          <dx-select-box
+            label="Month"
+            labelMode="floating"
+            labelLocation="left"
+            [dataSource]="monthDataSource"
+            displayExpr="name"
+            valueExpr="value"
+            [(value)]="selectedmonth"
+            (onValueChanged)="onMonthValueChanged($event)"
+            [width]="140"
+          >
+          </dx-select-box>
+        </div>
+
+        <!-- From Date -->
+        <div class="col-auto">
+          <dx-date-box
+            label="From Date"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="From_Date_Value"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy/MM/dd"
+            type="date"
+            [min]="minDate"
+            [max]="maxDate"
+            [width]="130"
+          >
+          </dx-date-box>
+        </div>
+
+        <!-- To Date -->
+        <div class="col-auto">
+          <dx-date-box
+            label="To Date"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="To_Date_Value"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy/MM/dd"
+            type="date"
+            [min]="minDate"
+            [max]="maxDate"
+            [width]="130"
+          >
+          </dx-date-box>
+        </div>
+
+        <!-- Apply Button -->
+        <div class="col-auto ms-auto mt-3">
+          <dx-button
+            text="Apply"
+            type="default"
+            stylingMode="contained"
+            [disabled]="!Facility_Value || !selectedSearchOn"
+            (onClick)="get_Datagrid_DataSource()"
+          >
+          </dx-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="button-container mb-2">
+    <dx-button
+      class="toggleButton"
+      icon="{{ isContentVisible ? 'chevronup' : 'chevrondown' }}"
+      stylingMode="outlined"
+      type="normal"
+      [hint]="isContentVisible ? 'Hide Filter Contend' : 'Show Filter Contend'"
+      [width]="200"
+      [height]="13"
+      (onClick)="toggleContent()"
+    >
+    </dx-button>
+  </div>
+
+  <!-- ============== Data Grid Table Started =================== -->
+  <ng-container>
+    <dx-data-grid
+      id="dataGrid"
+      #dataGrid
+      class="main-grid grid theme-dependent"
+      [height]="isContentVisible ? '75vh' : '80vh'"
+      [noDataText]="!isContentVisible ? 'No Data Available' : ' '"
+      [dataSource]="dataGrid_DataSource"
+      [showBorders]="true"
+      [allowColumnResizing]="false"
+      [columnAutoWidth]="true"
+      [rowAlternationEnabled]="true"
+      rowAlternationInterval="2"
+      [allowColumnReordering]="true"
+      [filterRow]="{ visible: false }"
+      [headerFilter]="{ visible: false }"
+      [columnFixing]="{
+        enabled: true,
+        texts: { fix: 'Freeze', unfix: 'Unfreeze' }
+      }"
+      (onExporting)="onExporting($event)"
+      [summary]="summaryColumnsData"
+      (onCellClick)="onCellClick($event)"
+      (onRowExpanding)="headerDataRowExpanding($event)"
+      (onRowCollapsing)="onRowCollapsing($event)"
+    >
+      <ng-container *ngFor="let column of columnsConfig">
+        <dxi-column
+          *ngIf="column.isBand"
+          [caption]="column.caption"
+          [isBand]="true"
+        >
+          <dxi-column
+            *ngFor="let subColumn of column.columns"
+            [dataField]="subColumn.dataField"
+            [caption]="subColumn.caption"
+            [format]="subColumn.format"
+            [visible]="subColumn.visible"
+          ></dxi-column>
+        </dxi-column>
+
+        <dxi-column
+          *ngIf="!column.isBand"
+          [dataField]="column.dataField"
+          [caption]="column.caption"
+          [format]="column.format"
+          [visible]="column.visible"
+        ></dxi-column>
+      </ng-container>
+
+      <dxo-search-panel [visible]="true"></dxo-search-panel>
+      <dxo-paging [pageSize]="10"></dxo-paging>
+      <dxo-pager
+        [visible]="true"
+        [allowedPageSizes]="allowedPageSizes"
+        [displayMode]="displayMode"
+        [showPageSizeSelector]="showPageSizeSelector"
+        [showInfo]="showInfo"
+        [showNavigationButtons]="showNavButtons"
+      >
+      </dxo-pager>
+      <dxo-load-panel [showPane]="false"></dxo-load-panel>
+      <dxo-scrolling mode="virtual"></dxo-scrolling>
+      <dxo-sorting mode="multiple"></dxo-sorting>
+      <dxo-header-filter [visible]="isFilterOpened">
+        <dxo-search [enabled]="true"></dxo-search>
+      </dxo-header-filter>
+
+      <dxo-filter-panel [visible]="isFilterOpened"></dxo-filter-panel>
+      <dxo-filter-builder [allowHierarchicalFields]="true">
+      </dxo-filter-builder>
+
+      <dxo-column-chooser
+        [height]="500"
+        hideOnOutsideClick="true"
+        [enabled]="true"
+        mode="select"
+      >
+      </dxo-column-chooser>
+
+      <dxo-search-panel
+        [visible]="true"
+        placeholder="Search"
+      ></dxo-search-panel>
+
+      <dxo-filter-row
+        [visible]="isFilterOpened"
+        [applyFilter]="applyFilter"
+      ></dxo-filter-row>
+      <dxo-export
+        [enabled]="true"
+        [allowExportSelectedData]="false"
+        [formats]="['xlsx']"
+      >
+      </dxo-export>
+      <dxo-toolbar>
+        <dxi-item location="before">
+          <div class="grid-header">Claim wise Costing</div>
+        </dxi-item>
+        <dxi-item
+          location="after"
+          locateInMenu="auto"
+          showText="inMenu"
+          widget="dxButton"
+          [options]="{
+            text: 'Refresh',
+            icon: 'refresh',
+            onClick: refresh,
+            stylingMode: 'text',
+            disabled: isEmptyDatagrid,
+            hint: 'Refresh'
+          }"
+        ></dxi-item>
+
+        <dxi-item
+           location="after"
+          locateInMenu="auto"
+          showText="inMenu"
+          widget="dxButton"
+          [options]="{
+            text: '',
+            icon: 'filter',
+            onClick: filterClick,
+            disabled: isEmptyDatagrid,
+            hint: 'Search Column'
+          }"
+        ></dxi-item>
+
+        <dxi-item
+          name="columnChooserButton"
+          locateInMenu="auto"
+          [disabled]="isEmptyDatagrid"
+        ></dxi-item>
+
+        <dxi-item name="exportButton" [disabled]="isEmptyDatagrid"></dxi-item>
+         <!-- <dxi-item
+        location="after"
+        widget="dxButton"
+        [options]="{
+          icon: 'xlsxfile',
+          disabled: isEmptyDatagrid,
+          onClick: exportServerExcel,
+          hint: 'Export Report'
+        }"
+      ></dxi-item> -->
+
+      </dxo-toolbar>
+
+      <dxo-grouping
+        [autoExpandAll]="false"
+        [contextMenuEnabled]="true"
+        [expandMode]="'rowClick'"
+      ></dxo-grouping>
+
+      <!-- <dxo-selection *ngIf="isContentVisible" mode="multiple"></dxo-selection> -->
+
+      <dxo-master-detail [enabled]="true" template="detail"></dxo-master-detail>
+      <div class="masterDetailsDiv" *dxTemplate="let data of 'detail'">
+        <dx-data-grid
+          class="detail-grid"
+          #detailsdatagrid
+          [dataSource]="FilteredDetailData"
+          [showBorders]="true"
+          [columnAutoWidth]="true"
+          [rowAlternationEnabled]="true"
+          [summary]="DetailsummaryColumns"
+          (onRowExpanding)="detailDataRowExpanding($event)"
+          (onRowCollapsing)="onDetailRowCollapsing($event)"
+          (onCellClick)="onCellClick($event)"
+          [height]="FilteredDetailData?.length > 6 ? '35vh' : 'auto'"
+        >
+          <dxo-pager
+            [visible]="false"
+            [allowedPageSizes]="allowedPageSizes"
+            [displayMode]="displayMode"
+            [showPageSizeSelector]="showPageSizeSelector"
+            [showInfo]="showInfo"
+            [showNavigationButtons]="showNavButtons"
+          >
+          </dxo-pager>
+          <dxo-load-panel [showPane]="false"></dxo-load-panel>
+          <dxo-scrolling mode="virtual"></dxo-scrolling>
+          <dxo-sorting mode="multiple"></dxo-sorting>
+          <dxo-header-filter [visible]="isFilterOpened">
+            <dxo-search [enabled]="true"></dxo-search>
+          </dxo-header-filter>
+          <dxo-filter-row
+            [visible]="isFilterOpened"
+            [applyFilter]="applyFilter"
+          ></dxo-filter-row>
+
+          <!-- <dxo-filter-panel [visible]="isFilterOpened"></dxo-filter-panel>
+          <dxo-filter-builder [allowHierarchicalFields]="true">
+          </dxo-filter-builder> -->
+          <dxi-column
+            type="detailExpand"
+            width="40"
+            fixed="true"
+            fixedPosition="left"
+          ></dxi-column>
+          <ng-container *ngFor="let column of DetailsColumns">
+            <dxi-column
+              *ngIf="column.isBand"
+              [caption]="column.caption"
+              [isBand]="true"
+            >
+              <dxi-column
+                *ngFor="let subColumn of column.columns"
+                [dataField]="subColumn.dataField"
+                [caption]="subColumn.caption"
+                [format]="subColumn.format"
+                [visible]="subColumn.visible"
+              ></dxi-column>
+            </dxi-column>
+
+            <dxi-column
+              *ngIf="!column.isBand"
+              [dataField]="column.dataField"
+              [caption]="column.caption"
+              [format]="column.format"
+              [visible]="column.visible"
+            ></dxi-column>
+          </ng-container>
+
+          <dxo-master-detail
+            [enabled]="true"
+            template="detail"
+          ></dxo-master-detail>
+          <div class="masterDetailsDiv" *dxTemplate="let subdata of 'detail'">
+            <dx-data-grid
+              class="subdetail-grid"
+              #subDetailsGrid
+              [dataSource]="FilteredSubDetailData"
+              [showBorders]="true"
+              [columnAutoWidth]="true"
+              [rowAlternationEnabled]="true"
+              [height]="FilteredSubDetailData?.length > 6 ? '35vh' : 'auto'"
+              [summary]="SubDetailsummaryColumns"
+            >
+              <dxo-pager
+                [visible]="false"
+                [allowedPageSizes]="allowedPageSizes"
+                [displayMode]="displayMode"
+                [showPageSizeSelector]="showPageSizeSelector"
+                [showInfo]="showInfo"
+                [showNavigationButtons]="showNavButtons"
+              >
+              </dxo-pager>
+              <dxo-load-panel [showPane]="false"></dxo-load-panel>
+              <dxo-scrolling mode="virtual"></dxo-scrolling>
+              <dxo-sorting mode="multiple"></dxo-sorting>
+
+              <dxo-header-filter [visible]="isFilterOpened">
+                <dxo-search [enabled]="true"></dxo-search>
+              </dxo-header-filter>
+              <dxo-filter-row
+                [visible]="isFilterOpened"
+                [applyFilter]="applyFilter"
+              ></dxo-filter-row>
+              <!-- <dxo-filter-panel [visible]="isFilterOpened"></dxo-filter-panel>
+              <dxo-filter-builder [allowHierarchicalFields]="true">
+              </dxo-filter-builder> -->
+
+              <ng-container *ngFor="let column of SubDetailsColumns">
+                <dxi-column
+                  *ngIf="column.isBand"
+                  [caption]="column.caption"
+                  [isBand]="true"
+                >
+                  <dxi-column
+                    *ngFor="let subColumn of column.columns"
+                    [dataField]="subColumn.dataField"
+                    [caption]="subColumn.caption"
+                    [format]="subColumn.format"
+                    [visible]="subColumn.visible"
+                  ></dxi-column>
+                </dxi-column>
+
+                <dxi-column
+                  *ngIf="!column.isBand"
+                  [dataField]="column.dataField"
+                  [caption]="column.caption"
+                  [format]="column.format"
+                  [visible]="column.visible"
+                ></dxi-column>
+              </ng-container>
+            </dx-data-grid>
+          </div>
+        </dx-data-grid>
+      </div>
+    </dx-data-grid>
+  </ng-container>
+
+  <!-- // ============Cpt code editing popup ============= -->
+  <form-popup
+    class="formPopupClass"
+    [(visible)]="isCptEditFormPopupOpened"
+    (save)="onClickUpdateNewCptType()"
+    titleText="Edit CPT Master"
+    [height]="'100vh'"
+    [width]="'80%'"
+  >
+    <app-cpt-master-edit-form
+      *ngIf="isCptEditFormPopupOpened"
+      [formData]="selectedCptCodeData"
+    ></app-cpt-master-edit-form>
+  </form-popup>
+
+  <!-- // ============Ordering Clinician code editing popup ============= -->
+  <dx-popup
+    [(visible)]="isEditClinicianPopupOpened"
+    [width]="'50%'"
+    [height]="'auto'"
+    [showTitle]="true"
+    title="Edit Clinician"
+    [dragEnabled]="true"
+    [closeOnOutsideClick]="true"
+    [showCloseButton]="true"
+    [shading]="false"
+    [toolbarItems]="toolbarEditItems"
+    [resizeEnabled]="false"
+  >
+    <div>
+      <app-clinician-edit-form
+        *ngIf="isEditClinicianPopupOpened"
+        [formData]="selectedClinicianData"
+      ></app-clinician-edit-form>
+    </div>
+  </dx-popup>
+
+  <!-- =============== claim details popup ============== -->
+  <form-popup
+    class="formPopupClass"
+    [(visible)]="isSingleClaimDetailsVisible"
+    [visibleButtons]="false"
+    titleText="Claim Details"
+    [height]="'100vh'"
+    [width]="'90%'"
+  >
+    <app-single-claim-details
+      *ngIf="isSingleClaimDetailsVisible"
+      [rowData]="clickedCellRowData"
+    ></app-single-claim-details>
+  </form-popup>
+
+  <!-- ======= Load panel ========= -->
+  <dx-load-panel
+    #loadPanel
+    shadingColor="rgba(0,0,0,0.6)"
+    [(visible)]="loadingVisible"
+    [showIndicator]="true"
+    [showPane]="true"
+    [shading]="true"
+    [message]="'Loading...'"
+  >
+  </dx-load-panel>
+
+  <dx-load-panel
+    #loadPanel
+    shadingColor="rgba(0,0,0,0.6)"
+    [(visible)]="exportingVisible"
+    [showIndicator]="true"
+    [showPane]="true"
+    [shading]="true"
+    [message]="'Exporting...'"
+  >
+  </dx-load-panel>
+  
+</div>

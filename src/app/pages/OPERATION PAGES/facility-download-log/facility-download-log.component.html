@@ -1,0 +1,304 @@
+<div class="view-wrapper list-page">
+  <div class="formData" [ngClass]="{ 'hide-content': !isContentVisible }">
+    <div class="container-fluid">
+      <div class="row g-2 align-items-center flex-nowrap">
+        <div class="col-auto">
+          <dx-drop-down-box
+            label="Facility"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="Facility_Value"
+            valueExpr="FacilityLicense"
+            [displayExpr]="displayFacility"
+            [showClearButton]="true"
+            [dataSource]="Facility_DataSource"
+            [width]="'250'"
+            [dropDownOptions]="{ width: '400' }"
+          >
+            <div *dxTemplate="let data of 'content'">
+              <dx-data-grid
+                #facilityGrid
+                [dataSource]="Facility_DataSource"
+                keyExpr="FacilityLicense"
+                [columns]="[
+                  { dataField: 'FacilityLicense', caption: 'License' },
+                  { dataField: 'FacilityName', caption: 'Name' },
+                ]"
+                [selection]="{ mode: 'single' }"
+                [hoverStateEnabled]="true"
+                [paging]="{ enabled: true, pageSize: 10 }"
+                [filterRow]="{ visible: true }"
+                [headerFilter]="{ visible: true }"
+                [scrolling]="{ mode: 'virtual' }"
+                [height]="'auto'"
+                [(selectedRowKeys)]="Facility_Value"
+              ></dx-data-grid>
+            </div>
+          </dx-drop-down-box>
+        </div>
+
+        <div class="col-auto">
+          <dx-select-box
+            label="Transaction Type"
+            labelMode="floating"
+            labelLocation="left"
+            [items]="TransactionTypeDataSource"
+            valueExpr="ID"
+            displayExpr="DESCRIPTION"
+            [(value)]="transactionValue"
+            [width]="160"
+          >
+          </dx-select-box>
+        </div>
+
+        <div class="col-auto">
+          <dx-select-box
+            label="File Status"
+            labelMode="floating"
+            labelLocation="left"
+            [items]="fileStatusDataSource"
+            valueExpr="ID"
+            displayExpr="DESCRIPTION"
+            [(value)]="fileStatus"
+            [width]="100"
+          >
+          </dx-select-box>
+        </div>
+
+        <div class="col-auto">
+          <dx-select-box
+            labelMode="floating"
+            labelLocation="left"
+            label="Year"
+            [(value)]="selectedYear"
+            [dataSource]="years"
+            (onValueChanged)="onYearChanged($event)"
+            placeholder="Year"
+            [width]="'auto'"
+            [width]="100"
+          ></dx-select-box>
+        </div>
+
+        <div class="col-auto">
+          <dx-select-box
+            labelMode="floating"
+            labelLocation="left"
+            label="month"
+            [dataSource]="monthDataSource"
+            displayExpr="name"
+            valueExpr="value"
+            [(value)]="selectedmonth"
+            (onValueChanged)="onMonthValueChanged($event)"
+            [width]="120"
+          >
+          </dx-select-box>
+        </div>
+
+        <div class="col-auto">
+          <dx-date-box
+            label="From Date"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="From_Date_Value"
+            [displayFormat]="'dd-MM-yyyy'"
+            type="date"
+            [width]="120"
+            [min]="minDate"
+            [max]="maxDate"
+          >
+          </dx-date-box>
+        </div>
+
+        <div class="col-auto">
+          <dx-date-box
+            label="To Date"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="To_Date_Value"
+            [displayFormat]="'dd-MM-yyyy'"
+            [min]="minDate"
+            [max]="ToDateMax"
+            type="date"
+            [width]="120"
+          >
+          </dx-date-box>
+        </div>
+
+        <!-- Apply Button -->
+        <div class="col-lg-auto mt-3 col-md-auto col-sm-12 ms-auto text-end">
+          <dx-button
+            text="Apply"
+            icon="refresh"
+            type="default"
+            stylingMode="contained"
+            [disabled]="isApplyButtonDisabled()"
+            (onClick)="get_Datagrid_DataSource()"
+          >
+          </dx-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="GridDataTable">
+    <dx-data-grid
+      class="grid theme-dependent"
+      noDataText="No Data"
+      [height]="'73vh'"
+      [dataSource]="gridDataSource"
+      [showBorders]="true"
+      [allowColumnResizing]="true"
+      [allowColumnReordering]="true"
+      [rowAlternationEnabled]="true"
+      rowAlternationInterval="2"
+      [columnAutoWidth]="true"
+    >
+      <dxo-paging [pageSize]="10"></dxo-paging>
+      <dxo-pager
+        [visible]="true"
+        [allowedPageSizes]="allowedPageSizes"
+        [displayMode]="displayMode"
+        [showPageSizeSelector]="showPageSizeSelector"
+        [showInfo]="true"
+        [showNavigationButtons]="true"
+      ></dxo-pager>
+
+      <dxo-load-panel [showPane]="false"></dxo-load-panel>
+      <dxo-scrolling mode="virtual"></dxo-scrolling>
+      <dxo-sorting mode="multiple"></dxo-sorting>
+      <dxo-header-filter [visible]="true"></dxo-header-filter>
+      <dxo-filter-row [visible]="isFilterRowVisible"></dxo-filter-row>
+
+      <dxo-toolbar>
+        <dxi-item location="before">
+          <div class="grid-header">Download From Shafafiya</div>
+        </dxi-item>
+
+        <dxi-item
+          location="after"
+          locateInMenu="auto"
+          showText="inMenu"
+          widget="dxButton"
+          [options]="{
+            icon: isFilterRowVisible ? 'filter' : 'filter',
+            hint: isFilterRowVisible ? 'Hide Filter Row' : 'Show Filter Row',
+            onClick: toggleFilterRow,
+            stylingMode: 'text',
+            elementAttr: { class: 'commonButtons' },
+          }"
+        ></dxi-item>
+      </dxo-toolbar>
+
+      <dxo-header-filter [visible]="true">
+        <dxo-search [enabled]="true"></dxo-search>
+      </dxo-header-filter>
+
+      <!-- Data Columns -->
+      <dxi-column dataField="FileID" caption="File ID"></dxi-column>
+      <dxi-column dataField="FileName" caption="File Name"></dxi-column>
+      <dxi-column dataField="SenderID" caption="Sender ID"></dxi-column>
+      <dxi-column dataField="ReceiverID" caption="Receiver ID"></dxi-column>
+      <dxi-column
+        dataField="TransactionDate"
+        caption="Transaction Date"
+      ></dxi-column>
+      <dxi-column
+        dataField="RecordCount"
+        caption="Record Count"
+        dataType="number"
+        [width]="'auto'"
+      ></dxi-column>
+
+      <dxi-column
+        *ngIf="gridDataSource"
+        type="buttons"
+        [width]="40"
+        [fixed]="true"
+        fixedPosition="right"
+        [allowFixing]="false"
+        [allowHiding]="false"
+        [allowResizing]="false"
+        [allowReordering]="false"
+      >
+        <dxi-button
+          text="Details"
+          icon="bi bi-filetype-xml"
+          stylingMode="text"
+          hint="View Details"
+          [onClick]="openDetailsPopup"
+        ></dxi-button>
+      </dxi-column>
+    </dx-data-grid>
+  </div>
+
+  <dx-load-panel
+    #loadPanel
+    class="loadPanel"
+    shadingColor="rgba(0,0,0,0)"
+    [(visible)]="loadingVisible"
+    [showIndicator]="true"
+    [showPane]="false"
+    [shading]="true"
+    [hideOnOutsideClick]="false"
+    [message]="'Loading...'"
+    [position]="{ of: '.view-wrapper', at: 'center', my: 'center' }"
+  >
+  </dx-load-panel>
+</div>
+<!-- Details Popup -->
+<dx-popup
+  [(visible)]="popupVisible"
+  [width]="'80%'"
+  [height]="'100vh'"
+  [showTitle]="true"
+  title="File Details"
+  [dragEnabled]="true"
+  [closeOnOutsideClick]="false"
+>
+  <div
+    *dxTemplate="let data of 'content'"
+    style="overflow-y: auto; height: 100%; padding: 16px"
+  >
+    <div
+      style="
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      "
+    >
+      <div *ngFor="let item of headerFields">
+        <dx-text-box
+          [value]="item.value"
+          [readOnly]="true"
+          stylingMode="outlined"
+          labelMode="floating"
+          [label]="item.label"
+        ></dx-text-box>
+      </div>
+    </div>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      "
+    >
+      <h5 style="margin: 0">XML Content</h5>
+      <dx-button
+        text="Download"
+        icon="download"
+        stylingMode="contained"
+        type="default"
+        (onClick)="downloadXmlFile()"
+      ></dx-button>
+    </div>
+    <dx-text-area
+      [value]="formattedXml"
+      height="380"
+      [readOnly]="true"
+      stylingMode="outlined"
+    ></dx-text-area>
+  </div>
+</dx-popup>

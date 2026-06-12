@@ -1,0 +1,404 @@
+<div id="reportPage" class="view-wrapper list-page drilldown mt-0">
+  <div
+    [ngClass]="{ 'hide-content': !isContentVisible }"
+    id="reportPageParams"
+    class="paramsDiv SearchParams-container mt-2 mb-1"
+  >
+    <div class="container-fluid toolbar-fields">
+      <div class="row align-items-center g-2">
+        <!-- Facility Dropdown -->
+        <div class="col-auto">
+          <dx-drop-down-box
+            #facilityDropDown
+            label="Facility"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="Facility_Value"
+            valueExpr="FacilityLicense"
+            [displayExpr]="displayFacility"
+            [showClearButton]="true"
+            [dataSource]="Facility_DataSource"
+            [width]="'350'"
+            [dropDownOptions]="{ width: 'auto' }"
+            (onValueChanged)="onFacilityChanged($event)"
+          >
+            <div *dxTemplate="let data of 'content'">
+              <dx-data-grid
+                [dataSource]="Facility_DataSource"
+                keyExpr="FacilityLicense"
+                [columns]="[
+                  {
+                    dataField: 'FacilityLicense',
+                    caption: 'Facility ID',
+                    width: 'auto'
+                  },
+                  {
+                    dataField: 'FacilityName',
+                    caption: 'Facility Name',
+                    width: 'auto'
+                  }
+                ]"
+                [selection]="{ mode: 'single' }"
+                [hoverStateEnabled]="true"
+                [paging]="{ enabled: true, pageSize: 10 }"
+                [filterRow]="{ visible: true }"
+                [headerFilter]="{ visible: true }"
+                [scrolling]="{ mode: 'virtual' }"
+                [height]="'auto'"
+                [(selectedRowKeys)]="Facility_Value"
+                (onSelectionChanged)="onFacilityGridSelectionChanged($event)"
+              ></dx-data-grid>
+            </div>
+          </dx-drop-down-box>
+        </div>
+
+        <!-- process Dropdown -->
+        <div class="col-auto">
+          <dx-drop-down-box
+            #processDropDown
+            label="Process No"
+            labelMode="floating"
+            labelLocation="left"
+            [(value)]="ProcessID_Value"
+            valueExpr="ID"
+            displayExpr="ProcessNo"
+            [showClearButton]="true"
+            [dataSource]="Process_DataSource"
+            [width]="'500'"
+            [dropDownOptions]="{ width: 'auto' }"
+            (onValueChanged)="onProcessChanged($event)"
+          >
+            <div *dxTemplate="let data of 'content'">
+              <dx-data-grid
+                #processGrid
+                [dataSource]="Process_DataSource"
+                keyExpr="ID"
+                [columns]="[
+                  {
+                    dataField: 'ProcessNo',
+                    caption: 'ProcessNo',
+                    width: 'auto',
+                    alignment: 'left'
+                  },
+                  {
+                    dataField: 'PeriodFrom',
+                    caption: 'Period From',
+                    width: 'auto',
+                    dataType: 'date',
+                    format: 'dd/MM/yyyy'
+                  },
+                  {
+                    dataField: 'PeriodTo',
+                    caption: 'Period To',
+                    width: 'auto',
+                    dataType: 'date',
+                    format: 'dd/MM/yyyy'
+                  },
+                  {
+                    dataField: 'Status',
+                    caption: 'Status',
+                    width: 'auto'
+                  }
+                ]"
+                [selection]="{ mode: 'single' }"
+                [hoverStateEnabled]="true"
+                [paging]="{ enabled: true, pageSize: 10 }"
+                [filterRow]="{ visible: true }"
+                [headerFilter]="{ visible: true }"
+                [scrolling]="{ mode: 'virtual' }"
+                [height]="'auto'"
+                [(selectedRowKeys)]="ProcessID_Value"
+              ></dx-data-grid>
+            </div>
+          </dx-drop-down-box>
+        </div>
+
+        <!-- Apply Button -->
+        <div class="col-auto ms-auto mt-3">
+          <dx-button
+            text="Apply"
+            type="default"
+            stylingMode="contained"
+            [disabled]="!Facility_Value"
+            (onClick)="get_Datagrid_DataSource()"
+          >
+          </dx-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="button-container mb-2">
+    <dx-button
+      class="toggleButton"
+      icon="{{ isContentVisible ? 'chevronup' : 'chevrondown' }}"
+      stylingMode="outlined"
+      type="normal"
+      [hint]="isContentVisible ? 'Hide Filter Contend' : 'Show Filter Contend'"
+      [width]="200"
+      [height]="13"
+      (onClick)="toggleContent()"
+    >
+    </dx-button>
+  </div> -->
+
+  <!-- ============== Data Grid Table Started =================== -->
+  <ng-container>
+    <dx-data-grid
+      id="dataGrid"
+      #dataGrid
+      class="grid theme-dependent"
+      [height]="isContentVisible ? '73vh' : '80vh'"
+      [noDataText]="!isContentVisible ? 'No Data Available' : ' '"
+      [dataSource]="dataGrid_DataSource"
+      [showBorders]="true"
+      [allowColumnResizing]="false"
+      [columnAutoWidth]="true"
+      [rowAlternationEnabled]="true"
+      rowAlternationInterval="2"
+      [allowColumnReordering]="true"
+      [columnFixing]="{
+        enabled: true,
+        texts: { fix: 'Freeze', unfix: 'Unfreeze' }
+      }"
+      (onExporting)="onExporting($event)"
+    >
+      <dxi-column
+        dataField="SlNo"
+        caption="SL NO"
+        width="auto"
+        alignment="center"
+      ></dxi-column>
+      <dxi-column dataField="Particulars" caption="Particulars"></dxi-column>
+      <dxi-column
+        dataField="Value"
+        caption="Value"
+        alignment="right"
+      ></dxi-column>
+
+      <dxi-column type="buttons" [width]="'auto'" caption=" ">
+        <dxi-button
+        text="Details"
+        icon="info"
+        [onClick]="viewDetails"
+      ></dxi-button>
+      </dxi-column>
+      <dxo-search-panel [visible]="true"></dxo-search-panel>
+      <dxo-paging [pageSize]="10"></dxo-paging>
+      <dxo-pager
+        [visible]="true"
+        [allowedPageSizes]="allowedPageSizes"
+        [displayMode]="displayMode"
+        [showPageSizeSelector]="showPageSizeSelector"
+        [showInfo]="showInfo"
+        [showNavigationButtons]="showNavButtons"
+      >
+      </dxo-pager>
+      <dxo-load-panel [showPane]="false"></dxo-load-panel>
+      <dxo-scrolling mode="virtual"></dxo-scrolling>
+      <dxo-sorting mode="multiple"></dxo-sorting>
+      <dxo-header-filter [visible]="isFilterOpened">
+        <dxo-search [enabled]="true"></dxo-search>
+      </dxo-header-filter>
+      <dxo-filter-row
+        [visible]="isFilterOpened"
+        [applyFilter]="applyFilter"
+      ></dxo-filter-row>
+      <dxo-filter-panel [visible]="isFilterOpened"></dxo-filter-panel>
+      <dxo-filter-builder [allowHierarchicalFields]="true">
+      </dxo-filter-builder>
+
+      <dxo-column-chooser
+        [height]="500"
+        hideOnOutsideClick="true"
+        [enabled]="true"
+        mode="select"
+      >
+      </dxo-column-chooser>
+
+      <dxo-search-panel
+        [visible]="true"
+        placeholder="Search"
+      ></dxo-search-panel>
+
+      <dxo-filter-row
+        [visible]="isFilterOpened"
+        [applyFilter]="applyFilter"
+      ></dxo-filter-row>
+      <dxo-export
+        [enabled]="true"
+        [allowExportSelectedData]="false"
+        [formats]="['xlsx']"
+      >
+      </dxo-export>
+      <dxo-toolbar>
+        <dxi-item location="before">
+          <div class="grid-header">Clinical Costing Summary</div>
+        </dxi-item>
+
+        <dxi-item
+          location="after"
+          locateInMenu="auto"
+          showText="inMenu"
+          widget="dxButton"
+          [options]="{
+            text: 'Refresh',
+            icon: 'refresh',
+            onClick: refresh,
+            stylingMode: 'text',
+            disabled: isEmptyDatagrid,
+            hint: 'Refresh'
+          }"
+        ></dxi-item>
+
+        <dxi-item
+          widget="dxButton"
+          [options]="{
+            text: '',
+            icon: 'filter',
+            onClick: filterClick,
+            disabled: isEmptyDatagrid,
+            hint: 'Search Column'
+          }"
+        ></dxi-item>
+
+        <dxi-item
+          name="columnChooserButton"
+          locateInMenu="auto"
+          [disabled]="isEmptyDatagrid"
+        ></dxi-item>
+
+        <dxi-item name="exportButton" [disabled]="isEmptyDatagrid"></dxi-item>
+      </dxo-toolbar>
+
+      <dxo-grouping
+        [autoExpandAll]="false"
+        [contextMenuEnabled]="true"
+        [expandMode]="'rowClick'"
+      ></dxo-grouping>
+
+      <!-- <dxo-selection *ngIf="isContentVisible" mode="multiple"></dxo-selection> -->
+    </dx-data-grid>
+  </ng-container>
+
+  <!-- ======= Load panel ========= -->
+  <dx-load-panel
+    #loadPanel
+    shadingColor="rgba(0,0,0,0.6)"
+    [(visible)]="loadingVisible"
+    [showIndicator]="true"
+    [showPane]="true"
+    [shading]="true"
+    [message]="'Loading...'"
+  >
+  </dx-load-panel>
+</div>
+
+
+<dx-popup
+    class="formPopupClass"
+    [(visible)]="ViewCostingSummaryPopup"
+    title="Clinical Costing - {{Particulars}}"
+    [width]="'80vw'"
+    [height]="'100vh'"
+  >
+      <dx-data-grid
+        #dataGrid
+        [dataSource]="SummaryDetailsDatagrid"
+        [showBorders]="true"
+        [paging]="{ pageSize: 10 }"
+        [pager]="{
+          showPageSizeSelector: true,
+          allowedPageSizes: [50, 100, 1000]
+        }"
+        [allowColumnResizing]="true"
+        [allowColumnReordering]="true"
+        [rowAlternationEnabled]="true"
+        rowAlternationInterval="2"
+        [columnAutoWidth]="true"
+        [columnFixing]="{ enabled: true }"
+        [height]="'85vh'"
+        [width]="'100%'"
+        (onExporting)="onExportingDetails($event)"
+      >
+        <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+        <dxo-pager
+          [visible]="true"
+          [allowedPageSizes]="allowedPageSizes"
+          [displayMode]="displayMode"
+          [showPageSizeSelector]="false"
+          [showInfo]="showInfo"
+          [showNavigationButtons]="showNavButtons"
+        >
+        </dxo-pager>
+        <dxo-load-panel [showPane]="false"></dxo-load-panel>
+        <dxo-scrolling mode="virtual"></dxo-scrolling>
+        <dxo-sorting mode="multiple"></dxo-sorting>
+        <dxo-scrolling mode="virtual"></dxo-scrolling>
+        <dxo-sorting mode="multiple"></dxo-sorting>
+        <dxo-header-filter [visible]="isDetailFilterOpened">
+        <dxo-search [enabled]="true"></dxo-search>
+      </dxo-header-filter>
+      <dxo-filter-row
+        [visible]="isDetailFilterOpened"
+        [applyFilter]="applyFilter"
+      ></dxo-filter-row>
+      <dxo-filter-panel [visible]="isDetailFilterOpened"></dxo-filter-panel>
+      <dxo-filter-builder [allowHierarchicalFields]="true">
+      </dxo-filter-builder>
+        <!-- <dxo-filter-row [visible]="true"></dxo-filter-row> -->
+        <dxo-grouping
+          [autoExpandAll]="false"
+          [contextMenuEnabled]="true"
+          [expandMode]="'rowClick'"
+        ></dxo-grouping>
+        <dxo-export
+        [enabled]="true"
+        [allowExportSelectedData]="false"
+        [formats]="['xlsx']"
+      >
+      </dxo-export>
+        <dxo-toolbar>
+        
+        <dxi-item
+          location="after"
+          locateInMenu="auto"
+          showText="inMenu"
+          widget="dxButton"
+          [options]="{
+            text: '',
+            icon: 'filter',
+            onClick: DetailsfilterClick,
+            hint: 'Search Column',
+          }"
+        ></dxi-item>
+
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
+
+        <dxi-column dataField="Category" caption="Category"> </dxi-column>
+        <dxi-column dataField="LedgerCode" caption="Ledger Code"> </dxi-column>
+        <dxi-column dataField="LedgerName" caption="Ledger Name"> </dxi-column>
+        <dxi-column dataField="Department" caption="Cost Center"> </dxi-column>
+        <dxi-column
+          dataField="Amount"
+          caption="Amount"
+          dataType="number"
+          format="#,##0.00"
+          alignment="right"
+        >
+        </dxi-column>
+
+        <dxo-summary>
+          <dxi-total-item
+            column="Amount"
+            summaryType="sum"
+            valueFormat="#,##0.00"
+            displayFormat="Total: {0}"
+          ></dxi-total-item>
+        </dxo-summary>
+      </dx-data-grid>
+
+      
+  </dx-popup>
+
