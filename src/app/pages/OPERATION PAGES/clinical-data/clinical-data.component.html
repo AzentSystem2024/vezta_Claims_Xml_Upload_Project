@@ -272,7 +272,7 @@
         dataField="TestUpload"
         caption="Test Upload"
         cellTemplate="testUploadCellTemplate"
-        width="140"
+        width="160"
       ></dxi-column>
 
       <dxi-column
@@ -296,6 +296,7 @@
       <!-- Template for Test Upload -->
       <div *dxTemplate="let cell of 'testUploadCellTemplate'">
         <span
+          [title]="cell.data.TestUpload"
           [ngStyle]="{
             color:
               (cell.data.TestUpload || '').toLowerCase() === 'failed'
@@ -311,13 +312,14 @@
                 : 'default',
           }"
         >
-          {{ cell.data.TestUpload }}
+          {{ truncateText(cell.data.TestUpload, 10) }}
         </span>
       </div>
 
       <!-- Template for Production Upload -->
       <div *dxTemplate="let cell of 'ProductionUploadCellTemplate'">
         <span
+          [title]="cell.data.ProductionUpload"
           [ngStyle]="{
             color:
               (cell.data.ProductionUpload || '').toLowerCase() === 'failed'
@@ -332,8 +334,9 @@
                 ? 'pointer'
                 : 'default',
           }"
+          class="text-truncate-cell"
         >
-          {{ cell.data.ProductionUpload }}
+          {{ truncateText(cell.data.ProductionUpload, 10) }}
         </span>
       </div>
     </dx-data-grid>

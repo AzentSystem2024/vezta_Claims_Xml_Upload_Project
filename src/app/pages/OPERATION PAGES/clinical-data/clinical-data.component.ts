@@ -194,6 +194,13 @@ export class ClinicalDataComponent implements OnInit {
     }
   }
 
+  truncateText(text: string, maxLength: number = 10): string {
+    if (!text) return '';
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + '...'
+      : text;
+  }
+
   //================ Year value change ===================
   onYearChanged(e: any): void {
     this.selectedYear = e.value;
@@ -431,6 +438,7 @@ export class ClinicalDataComponent implements OnInit {
   onUploadModeChanged() {
     this.clearSelection();
   }
+
   // ===== Upload handler =====
   uploadXmlFile() {
     if (!this.selectedRowsData.length) {
