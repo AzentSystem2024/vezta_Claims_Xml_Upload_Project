@@ -158,6 +158,8 @@ export class ClinicalDataComponent implements OnInit {
   // Process ID
   processID: any = 0;
 
+  uploadErrors: string[] = [];
+
   constructor(
     private service: ReportService,
     private router: Router,
@@ -429,18 +431,22 @@ export class ClinicalDataComponent implements OnInit {
   onUploadModeChanged() {
     this.clearSelection();
   }
-
   // ===== Upload handler =====
   uploadXmlFile() {
     if (!this.selectedRowsData.length) {
-      alert('Please select at least one row before uploading!');
+      this.notificationService.showNotification(
+        'Please select at least one row before uploading!',
+        'warning',
+      );
       return;
     }
 
     const userId = sessionStorage.getItem('UserID');
+
     this.totalCount = this.selectedRowsData.length;
     this.completedCount = 0;
     this.failedCount = 0;
+    this.uploadErrors = [];
     this.isUploading = true;
     this.isCancelled = false;
     this.currentRequest = undefined;
@@ -448,17 +454,18 @@ export class ClinicalDataComponent implements OnInit {
     this.uploadNextFile(0, userId);
   }
 
-  // ===== Upload logic with cancel check =====
+  // ===== Upload logic =====
   uploadNextFile(index: number, userId: string | null) {
+    // All files processed
     if (index >= this.selectedRowsData.length) {
-      this.refreshXmlGrid();
+      this.finishUploadSummary();
       return;
     }
 
     const row = this.selectedRowsData[index];
 
     const payload = {
-      FacilityID: this.selectedFacility.join('') || '',
+      FacilityID: this.selectedFacility?.join('') || '',
       FileName: row.XMLFileName,
       UserID: userId,
       ProcessID: row.ProcessID,
@@ -474,82 +481,95 @@ export class ClinicalDataComponent implements OnInit {
       .upload_XML_Data(payload)
       .subscribe({
         next: (res: any) => {
-          if (res.flag === '1') {
+          if (res?.flag === '1') {
             this.completedCount++;
           } else {
             this.failedCount++;
-            if (this.failedCount === this.totalCount) {
-              this.refreshXmlGrid();
-              return;
-            }
 
-            // Single record special case
-            if (this.totalCount === 1) {
-              this.finishUpload(res.message || 'Upload failed.', 'error');
-              this.refreshXmlGrid();
-              return;
-            }
+            this.uploadErrors.push(
+              `${row.XMLFileName} - ${res?.message || 'Upload failed'}`,
+            );
           }
+
           this.handleNext(index, userId);
         },
+
         error: () => {
           this.failedCount++;
-          // Check if all failed
-          if (this.failedCount === this.totalCount) {
-            this.finishUpload(
-              'All uploads failed due to network/server error.',
-              'error',
-            );
-            this.refreshXmlGrid();
-            return;
-          }
 
-          if (this.totalCount === 1) {
-            this.finishUpload('Network or server error.', 'error');
-            this.refreshXmlGrid();
-            return;
-          }
-
-          this.notificationService.showNotification(
-            'Network or server error.',
-            'error',
+          this.uploadErrors.push(
+            `${row.XMLFileName} - Network or server error`,
           );
+
           this.handleNext(index, userId);
         },
       });
   }
 
-  // ===== Decide next step =====
+  // ===== Move to next file =====
   handleNext(index: number, userId: string | null) {
     if (this.isCancelled) {
       this.finishUpload('Upload cancelled by user.', 'warning');
-      this.refreshXmlGrid();
+
+      setTimeout(() => {
+        this.refreshXmlGrid();
+      }, 500);
+
       return;
     }
+
     this.uploadNextFile(index + 1, userId);
   }
 
-  // ===== Cancel button handler =====
+  // ===== Final Summary =====
+  finishUploadSummary() {
+    let message = '';
+    let type: 'success' | 'warning' | 'error' = 'success';
+
+    if (this.completedCount > 0 && this.failedCount === 0) {
+      message = `${this.completedCount} file(s) uploaded successfully.`;
+      type = 'success';
+    } else if (this.completedCount > 0 && this.failedCount > 0) {
+      message = `${this.completedCount} uploaded, ${this.failedCount} failed.`;
+      type = 'warning';
+    } else {
+      message = 'All uploads failed.';
+      type = 'error';
+    }
+
+    this.finishUpload(message, type);
+
+    // Log failed file details
+    if (this.uploadErrors.length > 0) {
+      console.table(this.uploadErrors);
+    }
+
+    setTimeout(() => {
+      this.refreshXmlGrid();
+    }, 500);
+  }
+
+  // ===== Cancel Upload =====
   cancelUpload() {
     this.isCancelled = true;
+
     this.notificationService.showNotification(
       'Upload will stop after current file finishes.',
       'warning',
     );
   }
 
-  // ===== Cleanup / Finish Upload =====
-  finishUpload(message: string, type: 'success' | 'error' | 'warning') {
-    this.isUploading = false; // ⬅ always stop loading
+  // ===== Finish Upload =====
+  finishUpload(message: string, type: 'success' | 'warning' | 'error') {
+    this.isUploading = false;
     this.currentRequest = undefined;
 
-    // Only show a toast if a message exists
     if (message) {
       this.notificationService.showNotification(message, type);
     }
   }
 
-  // ===== XML Refresh =====
+  // ===== Refresh Grid =====
   refreshXmlGrid() {
     this.isUploading = false;
     this.clearSelection();
