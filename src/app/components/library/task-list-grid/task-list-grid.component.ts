@@ -21,7 +21,7 @@ import {
 import { exportDataGrid as exportToPdf } from 'devextreme/pdf_exporter';
 import { exportDataGrid as exportToXLSX } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
-import { saveAs } from 'file-saver-es';
+import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import { taskPriorityList, taskStatusList } from 'src/app/types/task';
 import { Task } from 'src/app/types/task';
@@ -33,13 +33,13 @@ import 'jspdf-autotable';
   styleUrls: ['./task-list-grid.component.scss'],
 })
 export class TaskListGridComponent implements OnChanges {
-  @ViewChild(DxDataGridComponent, { static: false }) grid: DxDataGridComponent;
+  @ViewChild(DxDataGridComponent, { static: false }) grid!: DxDataGridComponent;
 
-  @Input() dataSource: Task[];
+  @Input() dataSource!: Task[];
 
   @Output() tabValueChanged: EventEmitter<any> = new EventEmitter<EventEmitter<any>>();
 
-  tasks: Task[];
+  tasks!: Task[];
 
   priorityList = taskPriorityList;
 
@@ -91,7 +91,7 @@ export class TaskListGridComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.dataSource) {
-      this.tasks = changes.dataSource.currentValue.filter((item) => !!item.status && !!item.priority);
+      this.tasks = changes.dataSource.currentValue.filter((item:any) => !!item.status && !!item.priority);
     }
   };
 

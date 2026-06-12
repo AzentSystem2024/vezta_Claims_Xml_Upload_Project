@@ -1,17 +1,12 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-
 import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { exportDataGrid as exportDataGridToXLSX } from 'devextreme/excel_exporter';
 import { jsPDF } from 'jspdf';
 import { Workbook } from 'exceljs';
-import { saveAs } from 'file-saver-es';
-
-
+import { saveAs } from 'file-saver';
 import { Router } from '@angular/router';
 import { ConfigService } from './config.service';
-
-
 
 @Injectable()
 export class ReportService {
@@ -31,7 +26,11 @@ export class ReportService {
     { name: 'December', value: 11 },
   ];
 
-  constructor(private http: HttpClient, private router: Router,private config: ConfigService) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private config: ConfigService,
+  ) {}
 
   private get BASE_URL(): string {
     return this.config.apiBaseUrl;
@@ -85,15 +84,15 @@ export class ReportService {
     return this.http.post(url, reqBody);
   }
 
-   //========fetch datasource of Claim-Details========
-   fetch_Clinical_Costing_Summary_Data(formData: any) {
+  //========fetch datasource of Claim-Details========
+  fetch_Clinical_Costing_Summary_Data(formData: any) {
     const url = `${this.BASE_URL}ClinicalCostingProcess/clinicalCostingSummary`;
     const reqBody = formData;
     return this.http.post(url, reqBody);
   }
 
   //========fetch datasource of clinicalCostingSummaryDetails========
-   fetch_Clinical_Costing_Summary_Data_Details(formData: any) {
+  fetch_Clinical_Costing_Summary_Data_Details(formData: any) {
     const url = `${this.BASE_URL}ClinicalCostingProcess/clinicalCostingSummaryDetails`;
     const reqBody = formData;
     return this.http.post(url, reqBody);
@@ -105,8 +104,6 @@ export class ReportService {
     const reqBody = formData;
     return this.http.post(url, reqBody);
   }
-
-  
 
   //======== fetch datasource of Claim-Details-With-Activity ========
   fetch_Claim_Details_With_Activity_Data(formData: any) {
@@ -128,7 +125,6 @@ export class ReportService {
     const reqBody = formData;
     return this.http.post(url, reqBody);
   }
-
 
   //========fetch datasource of cpt-ledger-wise-summary========
   fetch_CPT_Ledger_wise_summary_Data(formData: any) {
@@ -177,7 +173,7 @@ export class ReportService {
         workbook.xlsx.writeBuffer().then((buffer) => {
           saveAs(
             new Blob([buffer], { type: 'application/octet-stream' }),
-            `${fileName}.xlsx`
+            `${fileName}.xlsx`,
           );
         });
       });
