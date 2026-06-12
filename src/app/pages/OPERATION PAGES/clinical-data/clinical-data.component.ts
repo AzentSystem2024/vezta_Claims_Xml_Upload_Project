@@ -382,6 +382,15 @@ export class ClinicalDataComponent implements OnInit {
       await processXmlFile(file);
     }
 
+    if (this.successCount > 0) {
+      const today = new Date();
+
+      this.fromDate = today;
+      this.toDate = today;
+
+      this.onApplyFilter();
+    }
+
     this.isExcelLoading = false;
     fileInput.value = '';
   }
@@ -449,7 +458,7 @@ export class ClinicalDataComponent implements OnInit {
     const row = this.selectedRowsData[index];
 
     const payload = {
-      FacilityID: this.selectedFacility,
+      FacilityID: this.selectedFacility.join('') || '',
       FileName: row.XMLFileName,
       UserID: userId,
       ProcessID: row.ProcessID,

@@ -25,6 +25,7 @@ import { FormPopupModule } from 'src/app/components';
 import { DataService } from 'src/app/services';
 import { MasterReportService } from '../../MASTER PAGES/master-report.service';
 import { ReportService } from 'src/app/services/Report-data.service';
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-facility-download-log',
@@ -82,6 +83,7 @@ export class FacilityDownloadLogComponent implements OnInit {
     private dataservice: DataService,
     private masterService: MasterReportService,
     private service: ReportService,
+    private notificationService: NotificationService,
   ) {
     this.minDate = new Date(2025, 0, 1);
     this.maxDate = new Date();
@@ -91,7 +93,9 @@ export class FacilityDownloadLogComponent implements OnInit {
       this.years.push(year);
     }
     //=============month field datasource============
-    this.monthDataSource = this.service.getMonths();
+    this.monthDataSource = this.service
+      .getMonths()
+      .filter((x: any) => x.value !== '' && x.name !== 'All');
   }
 
   //=== on init functions of the page ========
@@ -187,11 +191,53 @@ export class FacilityDownloadLogComponent implements OnInit {
   // =========== From Date Change Event =================
   onFromDateChanged(e: any): void {
     this.From_Date_Value = e.value;
+
+    const maxDate = new Date(e.value);
+    maxDate.setDate(maxDate.getDate() + 90);
+
+    this.ToDateMax = maxDate > new Date() ? new Date() : maxDate;
   }
 
   // ====== to date value change event =======
   onToDateChanged(e: any): void {
+    const fromDate = new Date(this.From_Date_Value);
+    const toDate = new Date(e.value);
+
+    const diffDays = Math.ceil(
+      (toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (diffDays > 90) {
+      this.notificationService.showNotification(
+        'Date range cannot exceed 90 days.',
+        'warning',
+      );
+
+      const maxDate = new Date(fromDate);
+      maxDate.setDate(maxDate.getDate() + 90);
+
+      this.To_Date_Value = maxDate;
+      return;
+    }
+
     this.To_Date_Value = e.value;
+  }
+
+  validateDateRange(): void {
+    if (!this.From_Date_Value || !this.To_Date_Value) {
+      return;
+    }
+
+    const fromDate = new Date(this.From_Date_Value);
+    const maxToDate = new Date(fromDate);
+    maxToDate.setDate(maxToDate.getDate() + 90);
+
+    // Restrict ToDate picker max value
+    this.ToDateMax = maxToDate > new Date() ? new Date() : maxToDate;
+
+    if (new Date(this.To_Date_Value) > maxToDate) {
+      this.To_Date_Value = maxToDate;
+    }
   }
 
   //================Show and Hide Search parameters==========

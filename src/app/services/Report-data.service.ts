@@ -148,8 +148,8 @@ export class ReportService {
         customizeCell: ({ gridCell }) => {
           // Skip group/footer summary rows
           if (
-            gridCell.rowType === 'groupFooter' ||
-            gridCell.rowType === 'totalFooter'
+            gridCell?.rowType === 'groupFooter' ||
+            gridCell?.rowType === 'totalFooter'
           ) {
             return false;
           }
@@ -168,8 +168,8 @@ export class ReportService {
         customizeCell: ({ gridCell, excelCell }) => {
           // Skip summary rows in Excel
           if (
-            gridCell.rowType === 'groupFooter' ||
-            gridCell.rowType === 'totalFooter'
+            gridCell?.rowType === 'groupFooter' ||
+            gridCell?.rowType === 'totalFooter'
           )
             return;
         },
