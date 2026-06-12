@@ -1,10 +1,4 @@
-import {
-  Component,
-  ViewChild,
-  NgModule,
-  OnInit,
-  OnDestroy,
-} from '@angular/core';
+import { Component, ViewChild, NgModule } from '@angular/core';
 import {
   DxButtonModule,
   DxDataGridModule,
@@ -14,15 +8,10 @@ import {
   DxTextBoxModule,
   DxPopupModule,
 } from 'devextreme-angular';
-import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
-import { exportDataGrid as exportDataGridToXLSX } from 'devextreme/excel_exporter';
 // import { CardActivitiesModule, ContactStatusModule } from 'src/app/components';
 import DataSource from 'devextreme/data/data_source';
 import { CommonModule } from '@angular/common';
 import { DataService } from 'src/app/services';
-import { Workbook } from 'exceljs';
-import { saveAs } from 'file-saver-es';
-import { jsPDF } from 'jspdf';
 import notify from 'devextreme/ui/notify';
 import { FormPopupModule } from 'src/app/components';
 import { ContactPanelModule } from 'src/app/components/library/contact-panel/contact-panel.component';
@@ -30,8 +19,8 @@ import { ContactPanelModule } from 'src/app/components/library/contact-panel/con
 //   DenialNewFormComponent,
 //   DenialNewFormModule,
 // } from 'src/app/pages/POP-UP_PAGES/denial-new-form/denial-new-form.component';
-import { SubDepartmentNewFormComponent,SubDepartmentNewFormModule } from '../../POP-UP_PAGES/sub-department-new-form/sub-department-new-form.component';
-import { SubDepartmentEditFormComponent,SubDepartmentEditFormModule } from '../../POP-UP_PAGES/sub-department-edit-form/sub-department-edit-form.component';
+import { SubDepartmentNewFormModule } from '../../POP-UP_PAGES/sub-department-new-form/sub-department-new-form.component';
+import { SubDepartmentEditFormModule } from '../../POP-UP_PAGES/sub-department-edit-form/sub-department-edit-form.component';
 import { DxLookupModule } from 'devextreme-angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReportService } from 'src/app/services/Report-data.service';
@@ -44,7 +33,7 @@ import { MasterReportService } from '../master-report.service';
 })
 export class SubDepartmentListComponent  {
   @ViewChild(DxDataGridComponent, { static: true })
-  dataGrid: DxDataGridComponent;
+  dataGrid!: DxDataGridComponent;
 
   // @ViewChild(DepartmentNewFormComponent, { static: false })
   // denialComponent: DepartmentNewFormComponent;
@@ -80,10 +69,10 @@ export class SubDepartmentListComponent  {
   isFilterRowVisible: boolean = false;
 
   GridSource: any;
-  currentPathName: string;
-  initialized: boolean;
+  currentPathName: string='';
+  initialized: boolean=false;
   selectedDepartment: any;
-  menuPrevilage: { CanAdd: boolean; CanEdit: boolean; CanDelete: boolean; };
+  menuPrevilage: any;
 
   constructor(
     private service: MasterReportService,
