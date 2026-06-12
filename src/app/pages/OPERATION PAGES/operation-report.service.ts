@@ -141,13 +141,13 @@ export class OperationReportService {
 
   // ===== fetch all generated xml file ======
   download_XML_error_Data(XMLFileID: any) {
-    const url = `${this.BASE_URL}ClinicalCostingProcess/downloadErrorReport`;
+    const url = `${this.BASE_URL}Clinicaldata/downloadErrorReport`;
     const reqBody = { XMLFileID: XMLFileID };
     return this.http.post(url, reqBody);
   }
   // =========== upload XML data ========
   upload_XML_Data(InputData: any) {
-    const url = `${this.BASE_URL}ClinicalCostingProcess/uploadXml`;
+    const url = `${this.BASE_URL}Clinicaldata/uploadXml`;
     const reqBody = InputData;
     return this.http.post(url, reqBody);
   }
