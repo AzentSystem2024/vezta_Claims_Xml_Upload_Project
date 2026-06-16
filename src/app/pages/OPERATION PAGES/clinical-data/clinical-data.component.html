@@ -4,6 +4,7 @@
       <div class="row align-items-center g-2">
         <div class="col-auto">
           <dx-drop-down-box
+            #facilityDropDownBox
             label="Facility"
             labelMode="floating"
             labelLocation="left"
@@ -32,6 +33,10 @@
                 [scrolling]="{ mode: 'virtual' }"
                 [height]="'auto'"
                 [(selectedRowKeys)]="selectedFacility"
+                (onSelectionChanged)="
+                  selectedFacility = $event.selectedRowKeys[0];
+                  facilityDropDownBox.instance.close()
+                "
               ></dx-data-grid>
             </div>
           </dx-drop-down-box>

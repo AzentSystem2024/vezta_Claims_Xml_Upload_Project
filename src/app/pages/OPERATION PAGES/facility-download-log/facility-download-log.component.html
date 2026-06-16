@@ -1,9 +1,10 @@
 <div class="view-wrapper list-page">
   <div class="formData" [ngClass]="{ 'hide-content': !isContentVisible }">
-    <div class="container-fluid">
-      <div class="row g-1 align-items-center flex-nowrap">
+    <div class="p-0">
+      <div class="row g-1 align-items-center">
         <div class="col-auto">
           <dx-drop-down-box
+            #facilityDropDownBox
             label="Facility"
             labelMode="floating"
             labelLocation="left"
@@ -32,6 +33,10 @@
                 [scrolling]="{ mode: 'virtual' }"
                 [height]="'auto'"
                 [(selectedRowKeys)]="Facility_Value"
+                (onSelectionChanged)="
+                  Facility_Value = $event.selectedRowKeys[0];
+                  facilityDropDownBox.instance.close()
+                "
               ></dx-data-grid>
             </div>
           </dx-drop-down-box>
@@ -142,7 +147,7 @@
     </div>
   </div>
 
-  <div class="GridDataTable">
+  <div class="GridDataTable mt-2">
     <dx-data-grid
       class="grid theme-dependent"
       noDataText="No Data"
@@ -196,7 +201,7 @@
       </dxo-header-filter>
 
       <!-- Data Columns -->
-       <dxi-column dataField="SenderID" caption="Sender ID"></dxi-column>
+      <dxi-column dataField="SenderID" caption="Sender ID"></dxi-column>
       <dxi-column dataField="ReceiverID" caption="Receiver ID"></dxi-column>
       <dxi-column
         dataField="TransactionDate"
@@ -210,7 +215,7 @@
       ></dxi-column>
       <dxi-column dataField="FileName" caption="File Name"></dxi-column>
       <dxi-column dataField="FileID" caption="File ID"></dxi-column>
-      
+
       <dxi-column
         *ngIf="gridDataSource"
         type="buttons"
@@ -287,36 +292,36 @@
         margin-bottom: 8px;
       "
     >
-       <div class="search-toolbar">
-  <dx-text-box
-    [(value)]="searchText"
-    placeholder="Search XML..."
-    mode="search"
-    valueChangeEvent="keyup"
-    (onValueChanged)="searchInXml($event)"
-  >
-  </dx-text-box>
+      <div class="search-toolbar">
+        <dx-text-box
+          [(value)]="searchText"
+          placeholder="Search XML..."
+          mode="search"
+          valueChangeEvent="keyup"
+          (onValueChanged)="searchInXml($event)"
+        >
+        </dx-text-box>
 
-  <span class="match-count" *ngIf="totalMatches">
-    {{ currentMatch }}/{{ totalMatches }}
-  </span>
+        <span class="match-count" *ngIf="totalMatches">
+          {{ currentMatch }}/{{ totalMatches }}
+        </span>
 
-  <dx-button
-    icon="chevronprev"
-    hint="Previous"
-    [disabled]="totalMatches === 0"
-    (onClick)="previousMatch()"
-  >
-  </dx-button>
+        <dx-button
+          icon="chevronprev"
+          hint="Previous"
+          [disabled]="totalMatches === 0"
+          (onClick)="previousMatch()"
+        >
+        </dx-button>
 
-  <dx-button
-    icon="chevronnext"
-    hint="Next"
-    [disabled]="totalMatches === 0"
-    (onClick)="nextMatch()"
-  >
-  </dx-button>
-    </div>
+        <dx-button
+          icon="chevronnext"
+          hint="Next"
+          [disabled]="totalMatches === 0"
+          (onClick)="nextMatch()"
+        >
+        </dx-button>
+      </div>
       <dx-button
         text="Download"
         icon="download"

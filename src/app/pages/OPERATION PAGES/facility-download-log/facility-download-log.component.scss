@@ -60,7 +60,8 @@
 .formData {
   background-color: var(--base-bg);
   border-radius: 8px;
-  padding: 10px;
+  padding: 8px;
+  padding-top: 5px;
   margin: 0px;
 }
 .hide-content {
@@ -90,10 +91,9 @@
   justify-content: flex-end;
 }
 
-
 .search-row {
-  flex-wrap: nowrap !important;     /* keep in one line */
-  overflow-x: auto !important;      /* scroll horizontally */
+  flex-wrap: nowrap !important; /* keep in one line */
+  overflow-x: auto !important; /* scroll horizontally */
   overflow-y: hidden;
   white-space: nowrap;
 }
