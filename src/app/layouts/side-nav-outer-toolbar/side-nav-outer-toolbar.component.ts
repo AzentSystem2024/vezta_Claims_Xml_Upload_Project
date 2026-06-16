@@ -60,7 +60,7 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
 
   routerSubscription: Subscription;
 
-  screenSubscription: Subscription;
+  screenSubscription!: Subscription;
   tabs: any[] = [];
   selectedIndex = 0;
   constructor(
@@ -82,7 +82,7 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     let path = 'analytics-dashboard';
-    let title = 'Dashboard';
+    let title = 'Home';
     this.tabs.push({
       title: title,
       path: path,

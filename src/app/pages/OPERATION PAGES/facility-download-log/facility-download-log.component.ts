@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, NgModule, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  NgModule,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {
   DxDataGridComponent,
   DxDropDownBoxComponent,
@@ -26,9 +32,7 @@ import { DataService } from 'src/app/services';
 import { MasterReportService } from '../../MASTER PAGES/master-report.service';
 import { ReportService } from 'src/app/services/Report-data.service';
 import { NotificationService } from 'src/app/services/notification.service';
-import {
-  DxTextAreaComponent,
-} from 'devextreme-angular';
+import { DxTextAreaComponent } from 'devextreme-angular';
 
 @Component({
   selector: 'app-facility-download-log',
@@ -43,21 +47,22 @@ export class FacilityDownloadLogComponent implements OnInit {
   @ViewChild('facilityDropDown', { static: false })
   facilityDropDown!: DxDropDownBoxComponent;
 
-  @ViewChild('xmlViewer') xmlViewer!: ElementRef;
 
+
+  @ViewChild('xmlViewer') xmlViewer!: ElementRef;
 
   readonly allowedPageSizes: any = [10, 20, 'all'];
   displayMode: any = 'full';
   showPageSizeSelector = true;
 
   isFilterRowVisible: boolean = false;
-  
 
   // ========= init data dropdown datasource and value variables =========
 
   PostOffice_Value: any;
   Facility_DataSource: any[] = [];
-  Facility_Value: any[] = [];
+  Facility_Value: string | null = null;
+  selectedFacilityKeys: string[] = [];
 
   From_Date_Value: any = null;
   To_Date_Value: any = null;
@@ -88,12 +93,11 @@ export class FacilityDownloadLogComponent implements OnInit {
 
   highlightedXml: string = '';
 
-  searchText:any;
+  searchText: any;
 
   currentMatch = 0;
 
   totalMatches = 0;
-
 
   constructor(
     private dataservice: DataService,
@@ -131,7 +135,7 @@ export class FacilityDownloadLogComponent implements OnInit {
           this.Facility_DataSource = response.data;
           this.loadingVisible = false;
           if (this.Facility_DataSource?.length == 1) {
-            this.Facility_Value = [this.Facility_DataSource[0].ID];
+            this.Facility_Value = this.Facility_DataSource[0].ID;
           }
         }
       });
@@ -151,11 +155,20 @@ export class FacilityDownloadLogComponent implements OnInit {
       });
   }
 
+onFacilitySelectionChanged(e: any) {
+  const key = e.selectedRowKeys[0];
+
+  this.Facility_Value = key;
+  this.selectedFacilityKeys = [key];
+
+  this.facilityDropDown.instance.close();
+}
+
   // ============ facility dropdown selection change event =============
   onFacilitySelected(e: any): void {
     if (e.selectedRowsData.length) {
       const selectedFacility = e.selectedRowsData[0];
-      this.Facility_Value = [selectedFacility.ID];
+      this.Facility_Value = selectedFacility.ID;
       this.PostOffice_Value = selectedFacility.PostOfficeID;
       this.facilityDropDown.instance.close();
     }
@@ -307,14 +320,15 @@ export class FacilityDownloadLogComponent implements OnInit {
     }
 
     this.loadingVisible = true;
-
+    console.log('input facility', this.Facility_Value);
     const inputData = {
-      FacilityID: this.Facility_Value.join(','),
+      FacilityID: this.Facility_Value,
       DateFrom: this.formatDate(this.From_Date_Value),
       DateTo: this.formatDate(this.To_Date_Value),
       TransactionType: this.transactionValue,
       FileStatus: this.fileStatus,
     };
+    console.log('input data', inputData);
 
     this.dataservice.get_facility_download_Data(inputData).subscribe({
       next: (res: any) => {
@@ -335,15 +349,13 @@ export class FacilityDownloadLogComponent implements OnInit {
     });
   }
 
- 
-
   // =========== detail data fetching ================
   openDetailsPopup = (event: any) => {
     this.loadingVisible = true;
 
     const selectedRowData = event.row.data;
     const inputFiledata = {
-      FacilityID: this.Facility_Value.join(','),
+      FacilityID: this.Facility_Value,
       FileID: selectedRowData.FileID,
     };
 
@@ -422,103 +434,96 @@ export class FacilityDownloadLogComponent implements OnInit {
     return `${item.FacilityLicense} - ${item.FacilityName}`;
   };
 
+  searchInXml(e: any) {
+    const value = e.value?.trim();
 
-searchInXml(e: any) {
-  const value = e.value?.trim();
-
-  if (!value) {
-    this.highlightedXml = this.escapeHtml(this.formattedXml);
-    this.currentMatch = 0;
-    this.totalMatches = 0;
-    return;
-  }
-
-  const regex = new RegExp(`(${value})`, 'gi');
-
-  this.highlightedXml = this.escapeHtml(this.formattedXml)
-    .replace(regex, '<mark>$1</mark>');
-
-  setTimeout(() => {
-    const matches =
-      this.xmlViewer.nativeElement.querySelectorAll('mark');
-
-    this.totalMatches = matches.length;
-
-    if (matches.length) {
-      this.currentMatch = 1;
-      matches[0].classList.add('active-match');
-
-      matches[0].scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
+    if (!value) {
+      this.highlightedXml = this.escapeHtml(this.formattedXml);
+      this.currentMatch = 0;
+      this.totalMatches = 0;
+      return;
     }
-  });
-}
 
+    const regex = new RegExp(`(${value})`, 'gi');
 
-previousMatch() {
-  const matches =
-    this.xmlViewer.nativeElement.querySelectorAll('mark');
+    this.highlightedXml = this.escapeHtml(this.formattedXml).replace(
+      regex,
+      '<mark>$1</mark>',
+    );
 
-  if (!matches.length) {
-    return;
+    setTimeout(() => {
+      const matches = this.xmlViewer.nativeElement.querySelectorAll('mark');
+
+      this.totalMatches = matches.length;
+
+      if (matches.length) {
+        this.currentMatch = 1;
+        matches[0].classList.add('active-match');
+
+        matches[0].scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }
+    });
   }
 
-  matches.forEach((m: HTMLElement) =>
-    m.classList.remove('active-match')
-  );
+  previousMatch() {
+    const matches = this.xmlViewer.nativeElement.querySelectorAll('mark');
 
-  this.currentMatch--;
+    if (!matches.length) {
+      return;
+    }
 
-  if (this.currentMatch < 1) {
-    this.currentMatch = matches.length;
+    matches.forEach((m: HTMLElement) => m.classList.remove('active-match'));
+
+    this.currentMatch--;
+
+    if (this.currentMatch < 1) {
+      this.currentMatch = matches.length;
+    }
+
+    const active = matches[this.currentMatch - 1];
+
+    active.classList.add('active-match');
+
+    active.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
   }
 
-  const active = matches[this.currentMatch - 1];
+  nextMatch() {
+    const matches = this.xmlViewer.nativeElement.querySelectorAll('mark');
 
-  active.classList.add('active-match');
+    if (!matches.length) {
+      return;
+    }
 
-  active.scrollIntoView({
-    behavior: 'smooth',
-    block: 'center',
-  });
-}
+    matches.forEach((m: HTMLElement) => m.classList.remove('active-match'));
 
-nextMatch() {
-  const matches =
-    this.xmlViewer.nativeElement.querySelectorAll('mark');
+    this.currentMatch++;
 
-  if (!matches.length) {
-    return;
+    if (this.currentMatch > matches.length) {
+      this.currentMatch = 1;
+    }
+
+    const active = matches[this.currentMatch - 1];
+
+    active.classList.add('active-match');
+
+    active.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
   }
 
-  matches.forEach((m: HTMLElement) =>
-    m.classList.remove('active-match')
-  );
-
-  this.currentMatch++;
-
-  if (this.currentMatch > matches.length) {
-    this.currentMatch = 1;
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
-
-  const active = matches[this.currentMatch - 1];
-
-  active.classList.add('active-match');
-
-  active.scrollIntoView({
-    behavior: 'smooth',
-    block: 'center',
-  });
-}
-
-private escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
 }
 
 @NgModule({

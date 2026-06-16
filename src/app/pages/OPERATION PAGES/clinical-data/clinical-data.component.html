@@ -4,7 +4,7 @@
       <div class="row align-items-center g-2">
         <div class="col-auto">
           <dx-drop-down-box
-            #facilityDropDownBox
+            #facilityDropDown
             label="Facility"
             labelMode="floating"
             labelLocation="left"
@@ -17,7 +17,7 @@
             [dropDownOptions]="{ width: '400' }"
           >
             <div *dxTemplate="let data of 'content'">
-              <dx-data-grid
+             <dx-data-grid
                 #facilityGrid
                 [dataSource]="facilityListDataSource"
                 keyExpr="FacilityLicense"
@@ -32,11 +32,8 @@
                 [headerFilter]="{ visible: true }"
                 [scrolling]="{ mode: 'virtual' }"
                 [height]="'auto'"
-                [(selectedRowKeys)]="selectedFacility"
-                (onSelectionChanged)="
-                  selectedFacility = $event.selectedRowKeys[0];
-                  facilityDropDownBox.instance.close()
-                "
+                [(selectedRowKeys)]="selectedFacilityKeys"
+                (onSelectionChanged)="onFacilitySelectionChanged($event)"
               ></dx-data-grid>
             </div>
           </dx-drop-down-box>

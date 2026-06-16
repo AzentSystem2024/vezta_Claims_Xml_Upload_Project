@@ -22,6 +22,7 @@ import {
   DxTextAreaModule,
   DxTextBoxModule,
   DxAccordionModule,
+  DxDropDownBoxComponent,
 } from 'devextreme-angular';
 import { ReportService } from 'src/app/services/Report-data.service';
 import { CommonModule } from '@angular/common';
@@ -48,6 +49,9 @@ export class ClinicalDataComponent implements OnInit {
 
   @ViewChild('fileInput')
   fileInputRef!: ElementRef<HTMLInputElement>;
+
+  @ViewChild('facilityDropDown', { static: false })
+  facilityDropDown!: DxDropDownBoxComponent;
 
   // Pagination
   readonly allowedPageSizes = [5, 10, 'all'];
@@ -91,7 +95,8 @@ export class ClinicalDataComponent implements OnInit {
 
   // Facility
   facilityListDataSource: any[] = [];
-  selectedFacility: any[] = [];
+  selectedFacility: string | null = null;
+  selectedFacilityKeys: string[] = [];
 
   // Filters
   fromDate: any = null;
@@ -194,6 +199,13 @@ export class ClinicalDataComponent implements OnInit {
     }
   }
 
+  onFacilitySelectionChanged(e: any) {
+    const key = e.selectedRowKeys[0];
+    this.selectedFacility = key;
+    this.selectedFacilityKeys = [key];
+    this.facilityDropDown.instance.close();
+  }
+
   truncateText(text: string, maxLength: number = 10): string {
     if (!text) return '';
     return text.length > maxLength
@@ -247,9 +259,7 @@ export class ClinicalDataComponent implements OnInit {
 
       if (this.facilityListDataSource?.length == 1) {
         // Auto-select first facility
-        this.selectedFacility = [
-          this.facilityListDataSource[0].FacilityLicense,
-        ];
+        this.selectedFacility = this.facilityListDataSource[0].FacilityLicense;
       }
     } catch (error) {
       console.error('Error fetching facility data:', error);
@@ -266,9 +276,7 @@ export class ClinicalDataComponent implements OnInit {
       date ? this.datePipe.transform(date, 'yyyy-MM-dd') : null;
 
     const payload = {
-      FacilityID: Array.isArray(this.selectedFacility)
-        ? this.selectedFacility.join(',')
-        : '',
+      FacilityID: this.selectedFacility,
       DateFrom: formatDate(this.fromDate),
       DateTo: formatDate(this.toDate),
     };
@@ -336,7 +344,7 @@ export class ClinicalDataComponent implements OnInit {
           const base64String = (reader.result as string).split(',')[1];
 
           const filePayload: any = {
-            facilityID: this.selectedFacility.join(','),
+            facilityID: this.selectedFacility,
             fileName: file.name,
             fileData: base64String,
             userID: 1,
@@ -473,7 +481,7 @@ export class ClinicalDataComponent implements OnInit {
     const row = this.selectedRowsData[index];
 
     const payload = {
-      FacilityID: this.selectedFacility?.join('') || '',
+      FacilityID: this.selectedFacility || '',
       FileName: row.XMLFileName,
       UserID: userId,
       ProcessID: row.ProcessID,
