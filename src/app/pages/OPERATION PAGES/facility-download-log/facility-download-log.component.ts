@@ -47,8 +47,6 @@ export class FacilityDownloadLogComponent implements OnInit {
   @ViewChild('facilityDropDown', { static: false })
   facilityDropDown!: DxDropDownBoxComponent;
 
-
-
   @ViewChild('xmlViewer') xmlViewer!: ElementRef;
 
   readonly allowedPageSizes: any = [10, 20, 'all'];
@@ -155,14 +153,14 @@ export class FacilityDownloadLogComponent implements OnInit {
       });
   }
 
-onFacilitySelectionChanged(e: any) {
-  const key = e.selectedRowKeys[0];
+  onFacilitySelectionChanged(e: any) {
+    const key = e.selectedRowKeys[0];
 
-  this.Facility_Value = key;
-  this.selectedFacilityKeys = [key];
+    this.Facility_Value = key;
+    this.selectedFacilityKeys = [key];
 
-  this.facilityDropDown.instance.close();
-}
+    this.facilityDropDown.instance.close();
+  }
 
   // ============ facility dropdown selection change event =============
   onFacilitySelected(e: any): void {
@@ -179,16 +177,10 @@ onFacilitySelectionChanged(e: any) {
     this.selectedYear = e.value;
     this.selectedmonth = '';
 
-    const currentYear = new Date().getFullYear();
-    const today = new Date();
+    this.From_Date_Value = new Date(this.selectedYear, 0, 1);
 
-    if (this.selectedYear === currentYear) {
-      this.From_Date_Value = new Date(this.selectedYear, 0, 1);
-      this.To_Date_Value = today;
-    } else {
-      this.From_Date_Value = new Date(this.selectedYear, 0, 1);
-      this.To_Date_Value = new Date(this.selectedYear, 11, 31);
-    }
+    this.To_Date_Value = new Date(this.From_Date_Value);
+    this.To_Date_Value.setDate(this.To_Date_Value.getDate() + 90);
   }
 
   //================ Month value change ===================
