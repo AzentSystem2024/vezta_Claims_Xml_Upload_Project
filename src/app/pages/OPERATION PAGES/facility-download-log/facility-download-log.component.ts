@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, NgModule, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgModule, OnInit, ViewChild } from '@angular/core';
 import {
   DxDataGridComponent,
   DxDropDownBoxComponent,
@@ -26,6 +26,9 @@ import { DataService } from 'src/app/services';
 import { MasterReportService } from '../../MASTER PAGES/master-report.service';
 import { ReportService } from 'src/app/services/Report-data.service';
 import { NotificationService } from 'src/app/services/notification.service';
+import {
+  DxTextAreaComponent,
+} from 'devextreme-angular';
 
 @Component({
   selector: 'app-facility-download-log',
@@ -40,11 +43,15 @@ export class FacilityDownloadLogComponent implements OnInit {
   @ViewChild('facilityDropDown', { static: false })
   facilityDropDown!: DxDropDownBoxComponent;
 
+  @ViewChild('xmlViewer') xmlViewer!: ElementRef;
+
+
   readonly allowedPageSizes: any = [10, 20, 'all'];
   displayMode: any = 'full';
   showPageSizeSelector = true;
 
   isFilterRowVisible: boolean = false;
+  
 
   // ========= init data dropdown datasource and value variables =========
 
@@ -78,6 +85,15 @@ export class FacilityDownloadLogComponent implements OnInit {
 
   fileStatusDataSource: any;
   fileStatus: any;
+
+  highlightedXml: string = '';
+
+  searchText:any;
+
+  currentMatch = 0;
+
+  totalMatches = 0;
+
 
   constructor(
     private dataservice: DataService,
@@ -319,6 +335,8 @@ export class FacilityDownloadLogComponent implements OnInit {
     });
   }
 
+ 
+
   // =========== detail data fetching ================
   openDetailsPopup = (event: any) => {
     this.loadingVisible = true;
@@ -334,6 +352,8 @@ export class FacilityDownloadLogComponent implements OnInit {
         if (res.flag === '1') {
           const xmlString = res.XMLData;
           this.formattedXml = xmlString;
+          this.highlightedXml = this.escapeHtml(xmlString);
+          this.searchText = '';
 
           this.headerFields = [];
 
@@ -401,6 +421,104 @@ export class FacilityDownloadLogComponent implements OnInit {
     if (!item) return '';
     return `${item.FacilityLicense} - ${item.FacilityName}`;
   };
+
+
+searchInXml(e: any) {
+  const value = e.value?.trim();
+
+  if (!value) {
+    this.highlightedXml = this.escapeHtml(this.formattedXml);
+    this.currentMatch = 0;
+    this.totalMatches = 0;
+    return;
+  }
+
+  const regex = new RegExp(`(${value})`, 'gi');
+
+  this.highlightedXml = this.escapeHtml(this.formattedXml)
+    .replace(regex, '<mark>$1</mark>');
+
+  setTimeout(() => {
+    const matches =
+      this.xmlViewer.nativeElement.querySelectorAll('mark');
+
+    this.totalMatches = matches.length;
+
+    if (matches.length) {
+      this.currentMatch = 1;
+      matches[0].classList.add('active-match');
+
+      matches[0].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  });
+}
+
+
+previousMatch() {
+  const matches =
+    this.xmlViewer.nativeElement.querySelectorAll('mark');
+
+  if (!matches.length) {
+    return;
+  }
+
+  matches.forEach((m: HTMLElement) =>
+    m.classList.remove('active-match')
+  );
+
+  this.currentMatch--;
+
+  if (this.currentMatch < 1) {
+    this.currentMatch = matches.length;
+  }
+
+  const active = matches[this.currentMatch - 1];
+
+  active.classList.add('active-match');
+
+  active.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+  });
+}
+
+nextMatch() {
+  const matches =
+    this.xmlViewer.nativeElement.querySelectorAll('mark');
+
+  if (!matches.length) {
+    return;
+  }
+
+  matches.forEach((m: HTMLElement) =>
+    m.classList.remove('active-match')
+  );
+
+  this.currentMatch++;
+
+  if (this.currentMatch > matches.length) {
+    this.currentMatch = 1;
+  }
+
+  const active = matches[this.currentMatch - 1];
+
+  active.classList.add('active-match');
+
+  active.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+  });
+}
+
+private escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 }
 
 @NgModule({

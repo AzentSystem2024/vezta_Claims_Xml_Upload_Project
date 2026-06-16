@@ -173,7 +173,7 @@
 
       <dxo-toolbar>
         <dxi-item location="before">
-          <div class="grid-header">Download From PostOffice</div>
+          <div class="grid-header">PostOffice View</div>
         </dxi-item>
 
         <dxi-item
@@ -196,9 +196,7 @@
       </dxo-header-filter>
 
       <!-- Data Columns -->
-      <dxi-column dataField="FileID" caption="File ID"></dxi-column>
-      <dxi-column dataField="FileName" caption="File Name"></dxi-column>
-      <dxi-column dataField="SenderID" caption="Sender ID"></dxi-column>
+       <dxi-column dataField="SenderID" caption="Sender ID"></dxi-column>
       <dxi-column dataField="ReceiverID" caption="Receiver ID"></dxi-column>
       <dxi-column
         dataField="TransactionDate"
@@ -210,7 +208,9 @@
         dataType="number"
         [width]="'auto'"
       ></dxi-column>
-
+      <dxi-column dataField="FileName" caption="File Name"></dxi-column>
+      <dxi-column dataField="FileID" caption="File ID"></dxi-column>
+      
       <dxi-column
         *ngIf="gridDataSource"
         type="buttons"
@@ -287,7 +287,36 @@
         margin-bottom: 8px;
       "
     >
-      <h5 style="margin: 0">XML Content</h5>
+       <div class="search-toolbar">
+  <dx-text-box
+    [(value)]="searchText"
+    placeholder="Search XML..."
+    mode="search"
+    valueChangeEvent="keyup"
+    (onValueChanged)="searchInXml($event)"
+  >
+  </dx-text-box>
+
+  <span class="match-count" *ngIf="totalMatches">
+    {{ currentMatch }}/{{ totalMatches }}
+  </span>
+
+  <dx-button
+    icon="chevronprev"
+    hint="Previous"
+    [disabled]="totalMatches === 0"
+    (onClick)="previousMatch()"
+  >
+  </dx-button>
+
+  <dx-button
+    icon="chevronnext"
+    hint="Next"
+    [disabled]="totalMatches === 0"
+    (onClick)="nextMatch()"
+  >
+  </dx-button>
+    </div>
       <dx-button
         text="Download"
         icon="download"
@@ -296,11 +325,7 @@
         (onClick)="downloadXmlFile()"
       ></dx-button>
     </div>
-    <dx-text-area
-      [value]="formattedXml"
-      height="400"
-      [readOnly]="true"
-      stylingMode="outlined"
-    ></dx-text-area>
+
+    <div class="xml-viewer" #xmlViewer [innerHTML]="highlightedXml"></div>
   </div>
 </dx-popup>
