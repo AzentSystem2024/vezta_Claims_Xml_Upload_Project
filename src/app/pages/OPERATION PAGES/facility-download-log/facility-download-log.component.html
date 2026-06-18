@@ -161,7 +161,13 @@
       [rowAlternationEnabled]="true"
       rowAlternationInterval="2"
       [columnAutoWidth]="true"
+      [(selectedRowKeys)]="selectedGridRowKeys"
     >
+      <dxo-selection
+        mode="multiple"
+        [showCheckBoxesMode]="'always'"
+      ></dxo-selection>
+
       <dxo-paging [pageSize]="10"></dxo-paging>
       <dxo-pager
         [visible]="true"
@@ -194,6 +200,19 @@
             onClick: toggleFilterRow,
             stylingMode: 'text',
             elementAttr: { class: 'commonButtons' },
+          }"
+        ></dxi-item>
+
+        <dxi-item
+          location="after"
+          widget="dxButton"
+          [options]="{
+            text: 'Download XML',
+            icon: ' ',
+            stylingMode: 'contained',
+            type: 'default',
+            disabled: !selectedGridRowKeys?.length,
+            onClick: downloadSelectedXmls
           }"
         ></dxi-item>
       </dxo-toolbar>

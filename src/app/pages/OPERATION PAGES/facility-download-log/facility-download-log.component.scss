@@ -135,3 +135,11 @@
   font-weight: 600;
   color: var(--text-color);
 }
+
+
+::ng-deep .dx-button.dx-button-default {
+    border-radius: 8px !important;
+    background-color: #196c99 !important;
+    padding: 8px 0px !important;
+    color: #fff !important;
+}

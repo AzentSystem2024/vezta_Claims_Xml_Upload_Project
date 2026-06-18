@@ -49,6 +49,8 @@ export class FacilityDownloadLogComponent implements OnInit {
 
   @ViewChild('xmlViewer') xmlViewer!: ElementRef;
 
+  selectedGridRowKeys: any[] = [];
+
   readonly allowedPageSizes: any = [10, 20, 'all'];
   displayMode: any = 'full';
   showPageSizeSelector = true;
@@ -398,6 +400,87 @@ export class FacilityDownloadLogComponent implements OnInit {
         this.loadingVisible = false;
       },
     });
+  };
+
+  fetchFileDataAsPromise(inputFiledata: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.dataservice.get_facility_File_Data(inputFiledata).subscribe({
+        next: (res: any) => resolve(res),
+        error: (err: any) => reject(err),
+      });
+    });
+  }
+
+  downloadSelectedXmls = async () => {
+    if (!this.selectedGridRowKeys || this.selectedGridRowKeys.length === 0) {
+      notify('Please select at least one row to download.', 'warning', 3000);
+      return;
+    }
+
+    let dirHandle: any;
+    try {
+      if ('showDirectoryPicker' in window) {
+        dirHandle = await (window as any).showDirectoryPicker();
+      } else {
+        notify(
+          'Directory picking is not supported in this browser. Please use Chrome or Edge.',
+          'error',
+          3000,
+        );
+        return;
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        return; // User cancelled directory selection
+      }
+      console.error('Directory picker error:', err);
+      notify('Could not select directory.', 'error', 3000);
+      return;
+    }
+
+    this.loadingVisible = true;
+    let successCount = 0;
+
+    for (const rowData of this.selectedGridRowKeys) {
+      const fileId = rowData.FileID;
+      let fileName = rowData.FileName || `file_${fileId}`;
+
+      if (fileName.toLowerCase().endsWith('.xml')) {
+        fileName = fileName.slice(0, -4);
+      }
+      fileName += '.xml';
+
+      const inputFiledata = {
+        FacilityID: this.Facility_Value,
+        FileID: fileId,
+      };
+
+      try {
+        const res: any = await this.fetchFileDataAsPromise(inputFiledata);
+        if (res && res.flag === '1') {
+          const xmlString = res.XMLData;
+          const fileHandle = await dirHandle.getFileHandle(fileName, {
+            create: true,
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(xmlString);
+          await writable.close();
+          successCount++;
+        } else {
+          console.error(`Failed to fetch file data for ${fileName}`);
+        }
+      } catch (err) {
+        console.error(`Error downloading ${fileName}`, err);
+      }
+    }
+
+    this.loadingVisible = false;
+    notify(
+      `Successfully downloaded ${successCount} out of ${this.selectedGridRowKeys.length} files.`,
+      'success',
+      3000,
+    );
+    this.selectedGridRowKeys = [];
   };
 
   // ======== download the popup xml content ============
